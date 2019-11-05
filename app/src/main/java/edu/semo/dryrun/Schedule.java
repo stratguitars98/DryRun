@@ -20,10 +20,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 
-public class Schedule extends AppCompatActivity {
+public class Schedule extends AppCompatActivity{
 //for prototype the dates will be hardcoded in
     private ListView myListView;
     private ArrayList<String> runs;
@@ -126,7 +127,6 @@ public class Schedule extends AppCompatActivity {
             String lines;
             while((lines = bf.readLine()) != null)
             {
-
                 runs.add(lines+"\n");
             }
         }
@@ -139,4 +139,7 @@ public class Schedule extends AppCompatActivity {
             Log.d(TAG, e.toString());
         }
     }
+
+
+
 }
