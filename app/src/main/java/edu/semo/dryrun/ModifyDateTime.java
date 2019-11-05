@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -36,6 +37,7 @@ public class ModifyDateTime extends AppCompatActivity {
     private Button saveRunButton;
     private ArrayList<String> newRuns;
     private String origDate;
+    private ArrayList<Date> sortedRuns;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +49,12 @@ public class ModifyDateTime extends AppCompatActivity {
         Intent in = getIntent();
         origDate = in.getStringExtra("edu.semo.dryrun.DATE");
         newRuns = in.getStringArrayListExtra("edu.semo.dryrun.ARRAY");
-        mapDate(origDate);
-        mapTime(origDate);
+        this.dateArray=mapDate(origDate);
+        this.timeArray=mapTime(origDate);
 
-        String tempDate = Integer.toString(dateArray[1] + 1) + "/" + dateArray[0] + "/" + dateArray[2];
+        String tempDate = Integer.toString(this.dateArray[1] + 1) + "/" + this.dateArray[0] + "/" + this.dateArray[2];
         mDisplayDate.setText(tempDate);
-        String tempTime = String.format("%02d:%02d", timeArray[0], timeArray[1]);
+        String tempTime = String.format("%02d:%02d", this.timeArray[0], this.timeArray[1]);
         mDisplayTime.setText(tempTime);
 
         mDisplayDate.setOnClickListener(new View.OnClickListener() {
@@ -113,10 +115,10 @@ public class ModifyDateTime extends AppCompatActivity {
     }
 
     //Really naive way of parsing from date string
-    private void mapDate(String origDate)
+    private int[] mapDate(String origDate)
     {
         String[] splitDate = origDate.split(" ");
-        dateArray = new int[3];
+        int[] dateArray = new int[3];
         //Put this into assets?
         //day of month
         dateArray[0]=Integer.parseInt(splitDate[2]);
@@ -137,37 +139,52 @@ public class ModifyDateTime extends AppCompatActivity {
         dateArray[1]=monthMap.get(splitDate[1]);
         //year
         dateArray[2]=Integer.parseInt(splitDate[5].trim());
+        return dateArray;
     }
-    private void mapTime(String origTime)
+    private int[] mapTime(String origTime)
     {
         String[] splitTime= origTime.split(" ")[3].split(":");
-        timeArray = new int[3];
+        int[] timeArray = new int[3];
         timeArray[0] = Integer.parseInt(splitTime[0]);
         timeArray[1] = Integer.parseInt(splitTime[1]);
         timeArray[2] = Integer.parseInt(splitTime[2]);
+        return timeArray;
     }
 
     private void writeToFile()
     {
         final Intent returnIntent = new Intent();
         String fileName = getResources().getString(R.string.datafile);
+
+        for(String s: this.newRuns)
+        {
+            System.out.println(s);
+        }
         try{
             File directory = getFilesDir();
             File f = new File(directory, fileName);
             f.createNewFile();
             FileOutputStream fos = new FileOutputStream(f, false);
-            String entryText = new Date(dateArray[2]-1900,dateArray[1],dateArray[0], timeArray[0], timeArray[1]).toString()+"\n";
+            Date possibleDate = new Date(dateArray[2]-1900,dateArray[1],dateArray[0], timeArray[0], timeArray[1]);
+            Date compareDate = new Date();
+            if(compareDate.compareTo(possibleDate)>0)
+            {
+                Toast.makeText(getApplicationContext(), "You can not make a run in the past.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String entryText = possibleDate.toString()+"\n";
             if(newRuns.contains(entryText))
             {
                 Toast.makeText(getApplicationContext(), "Run with this time already exists.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            newRuns.add(entryText);
+            this.horribleSort();
             int index = 0;
             while (index<newRuns.size()&&!newRuns.get(index).equals(origDate)) {
                 fos.write(newRuns.get(index).getBytes());
                 index++;
             }
-            fos.write(entryText.getBytes());
             for (int i = ++index; i < newRuns.size(); i++)
                 fos.write(newRuns.get(i).getBytes());
             fos.close();
@@ -190,5 +207,28 @@ public class ModifyDateTime extends AppCompatActivity {
             finish();
         }
     }
+
+    private void horribleSort()
+    {
+        this.sortedRuns = new ArrayList<Date>();
+        for(String s: this.newRuns)
+        {
+            int[] tempDate;
+            int[] tempTime;
+            tempDate = mapDate(s);
+            tempTime = mapTime(s);
+            this.sortedRuns.add(new Date(tempDate[2]-1900, tempDate[1], tempDate[0], tempTime[0], tempTime[1]));
+        }
+        Collections.sort(this.sortedRuns);
+        newRuns.clear();
+
+        for(Date d: this.sortedRuns)
+        {
+            newRuns.add(d.toString()+"\n");
+        }
+
+
+    }
+
 }
 

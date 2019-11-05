@@ -22,6 +22,7 @@
         android:background="@color/colorPrimary"
         android:text="Create New Run"
         android:textColor="@color/text"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"

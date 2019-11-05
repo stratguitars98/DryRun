@@ -46,6 +46,7 @@ public class DateAdapter extends BaseAdapter {
         View v = mInflater.inflate(R.layout.date_layout, null);
         TextView dateTextView = (TextView)v.findViewById(R.id.dateTextView);
         dateTextView.setText(runs.get(position).trim());
+        dateTextView.setTextSize(18);
         return v;
     }
 }
