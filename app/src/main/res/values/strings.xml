@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Dry Run</string>
+    <string name="datafile">data.txt</string>
+</resources>
